@@ -31,7 +31,7 @@ Manual install: put `BossIdols.dll` in `BepInEx/plugins`.
 | `MinPerIdol` | `1` | Minimum number of each idol (1–100). |
 | `MaxPerIdol` | `3` | Maximum number of each idol (1–100). Values below `MinPerIdol` count as `MinPerIdol`. |
 
-Changes apply to bosses spawned afterwards; a boss that is already alive keeps the drops it spawned with.
+Changes apply right away, including to bosses that are already alive; there's no need to restart or reload the world. The config file is watched, so editing it on a dedicated server takes effect when you save and is pushed to connected players. In-game changes through a configuration manager work the same way.
 
 ## Changelog
 

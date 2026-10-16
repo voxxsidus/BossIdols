@@ -6,7 +6,7 @@ namespace BossIdols
 {
     /// <summary>
     ///     Appends each boss's biome idols (Battle = UpgraderNWeapon, Protection = UpgraderNArmor)
-    ///     to the CharacterDrop of its prefab.
+    ///     to the CharacterDrop of its prefab and of any living instances.
     /// </summary>
     internal static class IdolDrops
     {
@@ -25,10 +25,6 @@ namespace BossIdols
             // effect and drop nothing; only the final phase has the boss loot
             ("FrozenKing_p3", 7),
         };
-
-        // Drops this mod added, so re-applying (world reload, config sync/change) replaces them instead of
-        // stacking duplicates. Prefabs survive world reloads, so their m_drops still hold earlier additions.
-        private static readonly HashSet<CharacterDrop.Drop> AddedDrops = new HashSet<CharacterDrop.Drop>();
 
         public static void Apply()
         {
@@ -52,41 +48,67 @@ namespace BossIdols
                     continue;
                 }
 
-                characterDrop.m_drops.RemoveAll(drop => AddedDrops.Remove(drop));
-                if (!enabled)
-                {
-                    continue;
-                }
-
+                var idols = new List<GameObject>();
                 foreach (string idolName in new[] { $"Upgrader{tier}Weapon", $"Upgrader{tier}Armor" })
                 {
                     GameObject idol = ZNetScene.instance.GetPrefab(idolName);
-                    if (!idol)
+                    if (idol)
+                    {
+                        idols.Add(idol);
+                    }
+                    else
                     {
                         Logger.LogWarning($"Idol prefab '{idolName}' not found, skipping it for {bossName}");
-                        continue;
                     }
+                }
 
-                    var drop = new CharacterDrop.Drop
+                var drops = new List<CharacterDrop.Drop>();
+                if (enabled)
+                {
+                    foreach (GameObject idol in idols)
                     {
-                        m_prefab = idol,
-                        m_amountMin = min,
-                        // m_dontScale rolls Random.Range(int, int), whose max is exclusive
-                        m_amountMax = max + 1,
-                        m_chance = 1f,
-                        m_onePerPlayer = false,
-                        m_levelMultiplier = false,
-                        m_dontScale = true,
-                    };
-                    characterDrop.m_drops.Add(drop);
-                    AddedDrops.Add(drop);
-                    added++;
+                        drops.Add(new CharacterDrop.Drop
+                        {
+                            m_prefab = idol,
+                            m_amountMin = min,
+                            // m_dontScale rolls Random.Range(int, int), whose max is exclusive
+                            m_amountMax = max + 1,
+                            m_chance = 1f,
+                            m_onePerPlayer = false,
+                            m_levelMultiplier = false,
+                            m_dontScale = true,
+                        });
+                    }
+                }
+
+                SetIdolDrops(characterDrop, idols, drops);
+                added += drops.Count;
+
+                // Instances copied m_drops from the prefab when they spawned
+                int bossHash = bossName.GetStableHashCode();
+                foreach (Character character in Character.GetAllCharacters())
+                {
+                    if (character.TryGetComponent(out ZNetView nview) && nview.GetZDO()?.GetPrefab() == bossHash &&
+                        character.TryGetComponent(out CharacterDrop liveDrop))
+                    {
+                        SetIdolDrops(liveDrop, idols, drops);
+                    }
                 }
             }
 
             Logger.LogInfo(enabled
                 ? $"Added {added} boss idol drops ({min}-{max} each)"
                 : "Disabled; boss idol drops removed");
+        }
+
+        /// <summary>
+        ///     Replaces the idol drops in a boss's drop list. Vanilla boss drop tables contain no idols, so any
+        ///     idol drop found there was added by an earlier Apply (prefabs and their m_drops survive world reloads).
+        /// </summary>
+        private static void SetIdolDrops(CharacterDrop characterDrop, List<GameObject> idols, List<CharacterDrop.Drop> drops)
+        {
+            characterDrop.m_drops.RemoveAll(drop => idols.Contains(drop.m_prefab));
+            characterDrop.m_drops.AddRange(drops);
         }
     }
 }
