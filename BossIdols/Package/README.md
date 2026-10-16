@@ -1,0 +1,38 @@
+﻿# BossIdols
+
+Every boss drops its own biome's **Battle Idol** and **Protection Idol** when it dies. Each idol is rolled separately, 1–3 of each by default, with a 100% chance. The boss's normal drops (trophy, key items, etc.) are unchanged.
+
+| Boss | Idols |
+|------|-------|
+| Eikthyr | Wooden |
+| The Elder | Bronze |
+| Bonemass | Iron |
+| Moder | Silver |
+| Yagluth | Black Metal |
+| The Queen | Black Marble |
+| Fader | Flametal |
+| Kall Fimbulbringer | Bloodgold (dropped by the final phase) |
+
+The amount isn't affected by the boss's star level or by world modifier loot settings.
+
+## Installation
+
+Requires [BepInExPack Valheim](https://thunderstore.io/c/valheim/p/denikson/BepInExPack_Valheim/) and [Jötunn](https://thunderstore.io/c/valheim/p/ValheimModding/Jotunn/). Every player and the server must have the mod (same minor version).
+
+Manual install: put `BossIdols.dll` in `BepInEx/plugins`.
+
+## Configuration
+
+`BepInEx/config/com.voxxsidus.bossidols.cfg`, section `[General]`. All options are admin-only and synced from the server to every client.
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `Enabled` | `true` | Whether bosses drop the idols. |
+| `MinPerIdol` | `1` | Minimum number of each idol (1–100). |
+| `MaxPerIdol` | `3` | Maximum number of each idol (1–100). Values below `MinPerIdol` count as `MinPerIdol`. |
+
+Changes apply to bosses spawned afterwards; a boss that is already alive keeps the drops it spawned with.
+
+## Changelog
+
+- 1.0.0: Initial release.
