@@ -1,4 +1,4 @@
-﻿# BossIdols
+# BossIdols
 
 Every boss drops its own biome's **Battle Idol** and **Protection Idol** when it dies. Each idol is rolled separately, 1–3 of each by default, with a 100% chance. The boss's normal drops (trophy, key items, etc.) are unchanged.
 
